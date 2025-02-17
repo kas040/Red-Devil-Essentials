@@ -1,56 +1,19 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "your_client_id"
-application_url = "your_app_url"
+client_id = "97311f9ca9f17b392285ec80cb148a74"
+application_url = "https://applicant-protocol-consequences-divide.trycloudflare.com"
 embedded = true
-name = "red-devil-essentials"
-handle = "red-devil-essentials"
+name = "Red Devil Essentials - Dev-V1"
+handle = "red-devil-essentials-dev-v1"
 
 [webhooks]
-api_version = "2024-01"
-
-[webhooks.privacy_compliance]
-customer_deletion_url = "/webhooks/customers/redact"
-shop_deletion_url = "/webhooks/shop/redact"
-customer_data_request_url = "/webhooks/customers/data_request"
-
-  [[webhooks.subscriptions]]
-  uri = "/webhooks/customers/data_request"
-  compliance_topics = [ "customers/data_request" ]
-
-  [[webhooks.subscriptions]]
-  uri = "/webhooks/customers/redact"
-  compliance_topics = [ "customers/redact" ]
-
-  [[webhooks.subscriptions]]
-  uri = "/webhooks/shop/redact"
-  compliance_topics = [ "shop/redact" ]
-
-  [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
-
-[access_scopes]
-# Core app functionality
-scopes = [
-  "read_products",
-  "write_products",
-  "read_product_listings",
-  "write_product_listings",
-  "read_inventory",
-  "write_inventory",
-  "read_price_rules",
-  "write_price_rules",
-  "read_discounts",
-  "write_discounts",
-  "read_scheduled_products",
-  "write_scheduled_products"
-]
+api_version = "2025-01"
 
 [auth]
 redirect_urls = [
-  "https://your-app-url.com/auth/callback",
-  "https://your-app-url.com/auth/shopify/callback"
+  "https://applicant-protocol-consequences-divide.trycloudflare.com/auth/callback",
+  "https://applicant-protocol-consequences-divide.trycloudflare.com/auth/shopify/callback",
+  "https://applicant-protocol-consequences-divide.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
@@ -58,4 +21,3 @@ embedded = false
 
 [build]
 automatically_update_urls_on_dev = true
-include_config_on_deploy = true

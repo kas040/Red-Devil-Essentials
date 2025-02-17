@@ -1,4 +1,3 @@
-import "@shopify/shopify-app-remix/adapters/node";
 import { 
   AppDistribution,
   DeliveryMethod,
@@ -30,7 +29,7 @@ const shopify = shopifyApp({
   authPathPrefix: "/auth",
   distribution: AppDistribution.AppStore,
   isEmbeddedApp: true,
-  sessionStorage: new SQLiteSessionStorage("path/to/session.db"),
+  sessionStorage: new SQLiteSessionStorage(new URL("../database.sqlite", import.meta.url).pathname),
   hooks: {
     afterAuth: async ({ session }) => {
       // Setup webhooks and any post-authentication tasks
