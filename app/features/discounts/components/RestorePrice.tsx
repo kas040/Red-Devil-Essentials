@@ -1,5 +1,5 @@
 import { useSubmit } from "@remix-run/react";
-import { Card, Button, TextContainer } from "@shopify/polaris";
+import { Card, Button, Box, Text } from "@shopify/polaris";
 
 interface RestorePriceProps {
   productId: string;
@@ -18,10 +18,10 @@ export function RestorePrice({ productId, originalPrice }: RestorePriceProps) {
 
   return (
     <Card sectioned>
-      <TextContainer>
-        <p>
+      <Box>
+        <Text as="p" variant="bodyMd">
           Original price: ${originalPrice.toFixed(2)}
-        </p>
+        </Text>
         <Button
           destructive
           onClick={handleRestore}
@@ -29,7 +29,7 @@ export function RestorePrice({ productId, originalPrice }: RestorePriceProps) {
         >
           Restore Original Price
         </Button>
-      </TextContainer>
+      </Box>
     </Card>
   );
 }

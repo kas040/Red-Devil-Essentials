@@ -2,8 +2,9 @@ import {
   Card,
   DataTable,
   Button,
-  Badge,
-  Stack,
+  Text,
+  Box,
+  InlineStack,
   Checkbox,
 } from "@shopify/polaris";
 import type { DiscountRule } from "~/types/discount";
@@ -40,17 +41,17 @@ export function ProductList({
     product.title,
     formatPrice(product.currentPrice),
     formatPrice(product.originalPrice),
-    <Stack spacing="tight">
+    <InlineStack gap="200">
       {product.activeRules.length ? (
         product.activeRules.map((rule) => (
-          <Badge key={rule.id} status="success">
+          <Text key={rule.id} tone="success">
             {rule.name}
-          </Badge>
+          </Text>
         ))
       ) : (
-        <Badge status="info">No active rules</Badge>
+        <Text tone="info">No active rules</Text>
       )}
-    </Stack>,
+    </InlineStack>,
     <Button onClick={() => onSelectProduct(product)}>
       Manage
     </Button>,

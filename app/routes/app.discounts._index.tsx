@@ -11,10 +11,10 @@ import {
 } from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
 import { getProductMetafields, updateProductPrice, restoreOriginalPrice } from "~/utils/price.server";
-import { ProductList } from "../features/discounts/components/ProductList";
-import { DiscountForm } from "../features/discounts/components/DiscountForm";
-import { RestorePrice } from "../features/discounts/components/RestorePrice";
-import { BulkSelectionForm, type BulkSelectionCriteria } from "../features/discounts/components/BulkSelectionForm";
+import { ProductList } from "~/features/discounts/components/ProductList";
+import { DiscountForm } from "~/features/discounts/components/DiscountForm";
+import { RestorePrice } from "~/features/discounts/components/RestorePrice";
+import { BulkSelectionForm, type BulkSelectionCriteria } from "~/features/discounts/components/BulkSelectionForm";
 import type { DiscountRule } from "~/types/discount";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -168,7 +168,7 @@ export default function DiscountsPage() {
         {actionData?.message && (
           <Layout.Section>
             <Banner
-              status={actionData.success ? "success" : "critical"}
+              tone={actionData.success ? "success" : "critical"}
               onDismiss={() => {}}
             >
               {actionData.message}
@@ -228,10 +228,10 @@ export default function DiscountsPage() {
         {selectedTab === 1 && (
           <Layout.Section>
             <Card title="Price History">
-              <Card.Section>
+              <Box padding="400">
                 {/* Implement price history view */}
                 <p>Price history view coming soon...</p>
-              </Card.Section>
+              </Box>
             </Card>
           </Layout.Section>
         )}

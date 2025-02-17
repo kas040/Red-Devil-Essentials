@@ -5,8 +5,9 @@ import {
   Select,
   TextField,
   Button,
-  Stack,
-  Tag,
+  InlineStack,
+  Text,
+  Box,
 } from "@shopify/polaris";
 
 interface BulkSelectionFormProps {
@@ -76,15 +77,32 @@ export function BulkSelectionForm({ onSearch, onClear }: BulkSelectionFormProps)
       </Card.Section>
 
       {appliedFilters.length > 0 && (
-        <Card.Section title="Applied Filters">
-          <Stack spacing="tight">
+        <Box padding="400">
+          <Text as="h3" variant="headingMd">Applied Filters</Text>
+          <InlineStack gap="200" wrap>
             {appliedFilters.map((filter, index) => (
-              <Tag key={index} onRemove={() => handleRemoveFilter(index)}>
-                {filter.type}: {filter.value}
-              </Tag>
+              <Box
+                key={index}
+                background="bg-surface-secondary"
+                padding="200"
+                borderRadius="200"
+                borderWidth="025"
+                borderColor="border"
+              >
+                <InlineStack gap="200" align="center">
+                  <Text>{filter.type}: {filter.value}</Text>
+                  <Button
+                    variant="plain"
+                    onClick={() => handleRemoveFilter(index)}
+                    accessibilityLabel={`Remove filter ${filter.type}`}
+                  >
+                    ✕
+                  </Button>
+                </InlineStack>
+              </Box>
             ))}
-          </Stack>
-        </Card.Section>
+          </InlineStack>
+        </Box>
       )}
     </Card>
   );

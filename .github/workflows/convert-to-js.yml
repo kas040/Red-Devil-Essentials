@@ -21,10 +21,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.20.x
-          cache: 'yarn'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: yarn install
+        run: npm install
 
       - name: Create temporary tsconfig file
         run: |
@@ -47,7 +47,7 @@ jobs:
           }' > tsconfig.js.json
 
       - name: Transpile to Javascript
-        run: yarn tsc -p tsconfig.js.json
+        run: npx tsc -p tsconfig.js.json
 
       - name: Remove Typescript files
         run: |
@@ -55,11 +55,11 @@ jobs:
           find . \( -name ".graphqlrc.ts" -o -name "tsconfig.js.json" -o -name "vite.config.ts" \) -delete
 
       - name: Run prettier
-        run: yarn prettier -w "app/**/*.{js,jsx}" ".graphqlrc.js" "vite.config.js"
+        run: npx prettier -w "app/**/*.{js,jsx}" ".graphqlrc.js" "vite.config.js"
 
       - name: Run ESLint
         run: |
-          yarn lint "app/**/*.{js,jsx}" ".graphqlrc.js" "vite.config.js" --fix --no-cache --ignore-pattern "\!.graphqlrc.js" --plugin @shopify/eslint-plugin --rule '{
+          npx eslint "app/**/*.{js,jsx}" ".graphqlrc.js" "vite.config.js" --fix --no-cache --ignore-pattern "\!.graphqlrc.js" --plugin @shopify/eslint-plugin --rule '{
             "import/order": "error",
             "import/newline-after-import": "error",
             "padding-line-between-statements": ["error",
