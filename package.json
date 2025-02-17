@@ -1,5 +1,5 @@
 {
-  "name": "Red_Devil_Essentials",
+  "name": "Red_Devil_Essentials-Dev-V1",
   "private": true,
   "scripts": {
     "build": "remix vite:build",
