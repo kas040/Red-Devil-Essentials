@@ -1,42 +1,84 @@
-import type { HeadersFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { Link, Outlet, useLoaderData, useRouteError } from "@remix-run/react";
-import { boundary } from "@shopify/shopify-app-remix/server";
-import { AppProvider } from "@shopify/shopify-app-remix/react";
-import { NavMenu } from "@shopify/app-bridge-react";
+import { json } from "@remix-run/node";
+import { Link, Outlet, useLoaderData, useNavigate, useRouteError } from "@remix-run/react";
+import { AppProvider } from "@shopify/polaris";
+import { authenticate } from "~/shopify.server";
+import { NavigationMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
-
-import { authenticate } from "../shopify.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
+export const loader = async ({ request }) => {
+  const { admin, session } = await authenticate.admin(request);
+  
+  // Check subscription status
+  const subscriptionResponse = await admin.graphql(`
+    query getSubscription {
+      appInstallation {
+        activeSubscriptions {
+          status
+          currentPeriodEnd
+        }
+      }
+    }
+  `);
 
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  const data = await subscriptionResponse.json();
+  
+  return json({
+    apiKey: process.env.SHOPIFY_API_KEY,
+    subscription: data.data.appInstallation.activeSubscriptions[0] || null
+  });
 };
 
 export default function App() {
-  const { apiKey } = useLoaderData<typeof loader>();
+  const { apiKey, subscription } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+
+  const navigationItems = [
+    {
+      label: "Dashboard",
+      destination: "/app/discounts",
+    },
+    {
+      label: "Producten",
+      destination: "/app/discounts/products",
+    },
+    {
+      label: "Kortingsregels",
+      destination: "/app/discounts/rules",
+    },
+    {
+      label: "Prijsgeschiedenis",
+      destination: "/app/discounts/history",
+    },
+  ];
 
   return (
-    <AppProvider isEmbeddedApp apiKey={apiKey}>
-      <NavMenu>
-        <Link to="/app" rel="home">
-          Home
-        </Link>
-        <Link to="/app/discounts">Discount Manager</Link>
-        <Link to="/app/additional">Additional page</Link>
-      </NavMenu>
+    <AppProvider>
+      <NavigationMenu 
+        navigationLinks={navigationItems}
+      />
+      {!subscription && (
+        <Banner status="warning">
+          <p>Start uw gratis proefperiode om gebruik te maken van alle functies.</p>
+          <Button onClick={() => navigate("/app/billing")}>Start proefperiode</Button>
+        </Banner>
+      )}
       <Outlet />
     </AppProvider>
   );
 }
 
-// Shopify needs Remix to catch some thrown responses, so that their headers are included in the response.
+// Error boundary
 export function ErrorBoundary() {
-  return boundary.error(useRouteError());
+  const error = useRouteError();
+  return (
+    <AppProvider>
+      <Page>
+        <Banner status="critical">
+          <p>Er is een fout opgetreden: {error.message}</p>
+        </Banner>
+      </Page>
+    </AppProvider>
+  );
 }
-
-export const headers: HeadersFunction = (headersArgs) => {
-  return boundary.headers(headersArgs);
-};

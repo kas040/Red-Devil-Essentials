@@ -1,13 +1,18 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "675db4258c6833123a788c09c8a15177"
-application_url = "https://licence-e-newman-placement.trycloudflare.com"
+client_id = "your_client_id"
+application_url = "your_app_url"
 embedded = true
-name = "Red Devil Essentials"
+name = "red-devil-essentials"
 handle = "red-devil-essentials"
 
 [webhooks]
-api_version = "2024-10"
+api_version = "2024-01"
+
+[webhooks.privacy_compliance]
+customer_deletion_url = "/webhooks/customers/redact"
+shop_deletion_url = "/webhooks/shop/redact"
+customer_data_request_url = "/webhooks/customers/data_request"
 
   [[webhooks.subscriptions]]
   uri = "/webhooks/customers/data_request"
@@ -26,14 +31,26 @@ api_version = "2024-10"
   uri = "/webhooks/app/uninstalled"
 
 [access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = ""
+# Core app functionality
+scopes = [
+  "read_products",
+  "write_products",
+  "read_product_listings",
+  "write_product_listings",
+  "read_inventory",
+  "write_inventory",
+  "read_price_rules",
+  "write_price_rules",
+  "read_discounts",
+  "write_discounts",
+  "read_scheduled_products",
+  "write_scheduled_products"
+]
 
 [auth]
 redirect_urls = [
-  "https://licence-e-newman-placement.trycloudflare.com/auth/callback",
-  "https://licence-e-newman-placement.trycloudflare.com/auth/shopify/callback",
-  "https://licence-e-newman-placement.trycloudflare.com/api/auth/callback"
+  "https://your-app-url.com/auth/callback",
+  "https://your-app-url.com/auth/shopify/callback"
 ]
 
 [pos]
