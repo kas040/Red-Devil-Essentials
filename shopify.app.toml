@@ -1,23 +1,19 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "97311f9ca9f17b392285ec80cb148a74"
-application_url = "https://applicant-protocol-consequences-divide.trycloudflare.com"
+application_url = "https://example.com/"
 embedded = true
 name = "Red Devil Essentials - Dev-V1"
 handle = "red-devil-essentials-dev-v1"
+
+[build]
+automatically_update_urls_on_dev = true
 
 [webhooks]
 api_version = "2025-01"
 
 [auth]
-redirect_urls = [
-  "https://applicant-protocol-consequences-divide.trycloudflare.com/auth/callback",
-  "https://applicant-protocol-consequences-divide.trycloudflare.com/auth/shopify/callback",
-  "https://applicant-protocol-consequences-divide.trycloudflare.com/api/auth/callback"
-]
+redirect_urls = [ "https://example.com/api/auth" ]
 
 [pos]
 embedded = false
-
-[build]
-automatically_update_urls_on_dev = true
