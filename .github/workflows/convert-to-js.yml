@@ -24,7 +24,7 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn add -W --dev @shopify/eslint-plugin --ignore-engines
+        run: yarn install
 
       - name: Create temporary tsconfig file
         run: |
