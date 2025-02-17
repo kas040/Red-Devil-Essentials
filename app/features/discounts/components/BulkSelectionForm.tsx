@@ -5,14 +5,19 @@ import {
   Select,
   TextField,
   Button,
-  InlineStack,
+  Stack,
   Text,
   Box,
+  Autocomplete,
+  Tag,
 } from "@shopify/polaris";
 
 interface BulkSelectionFormProps {
   onSearch: (criteria: BulkSelectionCriteria) => void;
   onClear: () => void;
+  collections: Array<{ label: string; value: string }>;
+  vendors: Array<{ label: string; value: string }>;
+  productTypes: Array<{ label: string; value: string }>;
 }
 
 export interface BulkSelectionCriteria {
@@ -20,20 +25,46 @@ export interface BulkSelectionCriteria {
   value: string;
 }
 
-export function BulkSelectionForm({ onSearch, onClear }: BulkSelectionFormProps) {
+export function BulkSelectionForm({
+  onSearch,
+  onClear,
+  collections,
+  vendors,
+  productTypes,
+}: BulkSelectionFormProps) {
   const [selectedType, setSelectedType] = useState<string>("collection");
-  const [searchValue, setSearchValue] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [inputValue, setInputValue] = useState("");
   const [appliedFilters, setAppliedFilters] = useState<BulkSelectionCriteria[]>([]);
 
+  const getOptions = useCallback(() => {
+    switch (selectedType) {
+      case "collection":
+        return collections;
+      case "vendor":
+        return vendors;
+      case "productType":
+        return productTypes;
+      default:
+        return [];
+    }
+  }, [selectedType, collections, vendors, productTypes]);
+
+  const options = getOptions().filter(option =>
+    option.label.toLowerCase().includes(inputValue.toLowerCase())
+  );
+
   const handleSearch = useCallback(() => {
+    if (selectedOptions.length === 0) return;
+
     const criteria: BulkSelectionCriteria = {
       type: selectedType as BulkSelectionCriteria["type"],
-      value: searchValue,
+      value: selectedOptions.join(","),
     };
     setAppliedFilters((prev) => [...prev, criteria]);
     onSearch(criteria);
-    setSearchValue("");
-  }, [selectedType, searchValue, onSearch]);
+    setSelectedOptions([]);
+  }, [selectedType, selectedOptions, onSearch]);
 
   const handleRemoveFilter = useCallback(
     (index: number) => {
@@ -56,21 +87,42 @@ export function BulkSelectionForm({ onSearch, onClear }: BulkSelectionFormProps)
               { label: "Product IDs", value: "ids" },
             ]}
             value={selectedType}
-            onChange={setSelectedType}
+            onChange={(value) => {
+              setSelectedType(value);
+              setSelectedOptions([]);
+              setInputValue("");
+            }}
           />
 
-          <TextField
-            label="Search Value"
-            value={searchValue}
-            onChange={setSearchValue}
-            placeholder={
-              selectedType === "ids"
-                ? "Enter comma-separated product IDs"
-                : "Enter search term"
-            }
-          />
+          {selectedType === "ids" ? (
+            <TextField
+              label="Product IDs"
+              value={inputValue}
+              onChange={setInputValue}
+              placeholder="Enter comma-separated product IDs"
+              helpText="Example: gid://shopify/Product/123,gid://shopify/Product/456"
+            />
+          ) : (
+            <Autocomplete
+              allowMultiple
+              options={options}
+              selected={selectedOptions}
+              textField={
+                <Autocomplete.TextField
+                  onChange={setInputValue}
+                  label="Search"
+                  value={inputValue}
+                  placeholder={`Search ${selectedType}s...`}
+                />
+              }
+              onSelect={(selected) => {
+                setSelectedOptions(selected);
+                setInputValue("");
+              }}
+            />
+          )}
 
-          <Button onClick={handleSearch} disabled={!searchValue}>
+          <Button onClick={handleSearch} disabled={selectedType === "ids" ? !inputValue : selectedOptions.length === 0}>
             Add Filter
           </Button>
         </FormLayout>
@@ -78,30 +130,19 @@ export function BulkSelectionForm({ onSearch, onClear }: BulkSelectionFormProps)
 
       {appliedFilters.length > 0 && (
         <Box padding="400">
-          <Text as="h3" variant="headingMd">Applied Filters</Text>
-          <InlineStack gap="200" wrap>
+          <Stack vertical spacing="tight">
+            <Text as="h3" variant="headingMd">Applied Filters</Text>
+            <Stack spacing="tight">
             {appliedFilters.map((filter, index) => (
-              <Box
+              <Tag
                 key={index}
-                background="bg-surface-secondary"
-                padding="200"
-                borderRadius="200"
-                borderWidth="025"
-                borderColor="border"
+                onRemove={() => handleRemoveFilter(index)}
               >
-                <InlineStack gap="200" align="center">
-                  <Text>{filter.type}: {filter.value}</Text>
-                  <Button
-                    variant="plain"
-                    onClick={() => handleRemoveFilter(index)}
-                    accessibilityLabel={`Remove filter ${filter.type}`}
-                  >
-                    ✕
-                  </Button>
-                </InlineStack>
-              </Box>
+                {filter.type}: {filter.value}
+              </Tag>
             ))}
-          </InlineStack>
+            </Stack>
+          </Stack>
         </Box>
       )}
     </Card>

@@ -1,83 +1,87 @@
-import { Page, Layout, Button, Banner } from "@shopify/polaris";
-import { useState } from "react";
 import { json } from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
 import type { LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+import {
+  Page,
+  Layout,
+  Card,
+  DataTable,
+  Badge,
+  Button,
+} from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
-import { DiscountTable } from "~/components/DiscountTable";
-import { discountManager } from "~/models/DiscountManager";
-import { discountScheduler } from "~/models/DiscountScheduler";
+import type { DiscountRule } from "~/types/discount";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
-  const rules = await discountManager.getAllRules();
-  return json({ rules });
-}
 
-export async function action({ request }: ActionFunctionArgs) {
-  const { admin } = await authenticate.admin(request);
-  const formData = await request.formData();
-  
-  try {
-    switch (formData.get('action')) {
-      case 'create':
-      case 'update': {
-        const rule = createRuleFromFormData(formData);
-        await metafieldManager.saveDiscountRule(admin, rule);
-        await discountScheduler.scheduleRule(admin, rule);
-        return json({ success: true });
+  // Fetch discount rules from metafields
+  const response = await admin.graphql(`
+    query getDiscountRules {
+      metaobjects(first: 50, type: "discount_rule") {
+        nodes {
+          id
+          fields {
+            key
+            value
+          }
+        }
       }
-      case 'delete':
-        await discountManager.deleteRule(formData.get('ruleId') as string);
-        return json({ success: true });
-      
-      default:
-        return json({ error: "Invalid action" }, { status: 400 });
     }
-  } catch (error) {
-    return json({ error: error.message }, { status: 400 });
-  }
-}
+  `);
 
-export default function RulesPage() {
+  const { data } = await response.json();
+  const rules = data.metaobjects.nodes.map((node: any) => {
+    const fields = node.fields.reduce((acc: any, field: any) => {
+      acc[field.key] = field.value;
+      return acc;
+    }, {});
+
+    return {
+      id: node.id,
+      name: fields.name,
+      type: fields.type,
+      value: fields.value,
+      isActive: fields.is_active === "true",
+      createdAt: fields.created_at,
+      updatedAt: fields.updated_at,
+    };
+  });
+
+  return json({ rules });
+};
+
+export default function DiscountRulesPage() {
   const { rules } = useLoaderData<typeof loader>();
-  const actionData = useActionData();
-  const [showRuleForm, setShowRuleForm] = useState(false);
 
-  const handleEdit = (ruleId: string) => {
-    // Implementeer edit functionaliteit
-  };
-
-  const handleDelete = async (ruleId: string) => {
-    // Implementeer delete functionaliteit
-  };
-
-  const handleDuplicate = (ruleId: string) => {
-    // Implementeer duplicate functionaliteit
-  };
+  const rows = rules.map((rule: DiscountRule) => [
+    rule.name,
+    rule.type,
+    rule.value,
+    <Badge status={rule.isActive ? "success" : "critical"}>
+      {rule.isActive ? "Active" : "Inactive"}
+    </Badge>,
+    new Date(rule.createdAt).toLocaleDateString(),
+    <Button
+      url={`/app/discounts/rules/${rule.id}`}
+      variant="plain"
+    >
+      Edit
+    </Button>,
+  ]);
 
   return (
-    <Page
-      title="Kortingsregels"
-      primaryAction={
-        <Button primary onClick={() => setShowRuleForm(true)}>
-          Nieuwe regel
-        </Button>
-      }
-    >
+    <Page title="Discount Rules">
       <Layout>
-        {actionData?.error && (
-          <Layout.Section>
-            <Banner status="critical">{actionData.error}</Banner>
-          </Layout.Section>
-        )}
         <Layout.Section>
-          <DiscountTable
-            rules={rules}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onDuplicate={handleDuplicate}
-          />
+          <Card>
+            <DataTable
+              columnContentTypes={["text", "text", "text", "text", "text", "text"]}
+              headings={["Name", "Type", "Value", "Status", "Created", "Actions"]}
+              rows={rows}
+              footerContent={`${rules.length} rules`}
+            />
+          </Card>
         </Layout.Section>
       </Layout>
     </Page>

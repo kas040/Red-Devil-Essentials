@@ -11,6 +11,15 @@ export type DiscountRule = {
   name: string;
   type: "percentage" | "fixed" | "formula";
   value: string;
+  schedule?: {
+    startDate: string;
+    endDate?: string;
+    timezone: string;
+  };
+  tags?: {
+    add: string[];
+    remove: string[];
+  };
   startDate?: string;
   endDate?: string;
   target: "product" | "collection" | "vendor" | "productType";

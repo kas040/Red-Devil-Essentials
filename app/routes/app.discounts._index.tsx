@@ -8,6 +8,7 @@ import {
   Banner,
   Card,
   Tabs,
+  Loading,
 } from "@shopify/polaris";
 import { authenticate } from "~/shopify.server";
 import { getProductMetafields, updateProductPrice, restoreOriginalPrice } from "~/utils/price.server";
@@ -15,12 +16,14 @@ import { ProductList } from "~/features/discounts/components/ProductList";
 import { DiscountForm } from "~/features/discounts/components/DiscountForm";
 import { RestorePrice } from "~/features/discounts/components/RestorePrice";
 import { BulkSelectionForm, type BulkSelectionCriteria } from "~/features/discounts/components/BulkSelectionForm";
+import { PricePreview } from "~/features/discounts/components/PricePreview";
 import type { DiscountRule } from "~/types/discount";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
 
-  const response = await admin.graphql(`
+  // Fetch products
+  const productsResponse = await admin.graphql(`
     query getProducts {
       products(first: 50) {
         nodes {
@@ -31,21 +34,38 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
               price
             }
           }
+          vendor
+          productType
         }
       }
     }
   `);
 
-  const { data } = await response.json();
+  // Fetch collections
+  const collectionsResponse = await admin.graphql(`
+    query getCollections {
+      collections(first: 50) {
+        nodes {
+          id
+          title
+        }
+      }
+    }
+  `);
+
+  const { data: productsData } = await productsResponse.json();
+  const { data: collectionsData } = await collectionsResponse.json();
 
   const products = await Promise.all(
-    data.products.nodes.map(async (product: any) => {
+    productsData.products.nodes.map(async (product: any) => {
       const metafields = await getProductMetafields(
         product.id.split("/").pop(),
         admin
       );
       return {
         ...product,
+        vendor: product.vendor,
+        productType: product.productType,
         currentPrice: parseFloat(product.variants.nodes[0].price),
         originalPrice: metafields?.originalPrice || parseFloat(product.variants.nodes[0].price),
         activeRules: metafields?.activeRules || [],
@@ -53,7 +73,28 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     })
   );
 
-  return json({ products });
+  // Prepare unique values for filters
+  const vendors = [...new Set(products.map(p => p.vendor))].filter(Boolean).map(v => ({
+    label: v,
+    value: v,
+  }));
+
+  const productTypes = [...new Set(products.map(p => p.productType))].filter(Boolean).map(t => ({
+    label: t,
+    value: t,
+  }));
+
+  const collections = collectionsData.collections.nodes.map((c: any) => ({
+    label: c.title,
+    value: c.id,
+  }));
+
+  return json({
+    products,
+    collections,
+    vendors,
+    productTypes,
+  });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -100,14 +141,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function DiscountsPage() {
-  const { products } = useLoaderData<typeof loader>();
+  const { products, collections, vendors, productTypes } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [selectedTab, setSelectedTab] = useState(0);
   const [filteredProducts, setFilteredProducts] = useState(products);
+  const [isLoading, setIsLoading] = useState(false);
+  const [previewRule, setPreviewRule] = useState<Partial<DiscountRule>>({});
 
   const handleBulkSearch = async (criteria: BulkSelectionCriteria) => {
+    setIsLoading(true);
     // Filter products based on criteria
     let filtered = [...products];
     
@@ -132,6 +176,7 @@ export default function DiscountsPage() {
     }
     
     setFilteredProducts(filtered);
+    setIsLoading(false);
   };
 
   const handleProductSelect = (productId: string, selected: boolean) => {
@@ -192,16 +237,25 @@ export default function DiscountsPage() {
               <BulkSelectionForm
                 onSearch={handleBulkSearch}
                 onClear={() => setFilteredProducts(products)}
+                collections={collections}
+                vendors={vendors}
+                productTypes={productTypes}
               />
             </Layout.Section>
 
             <Layout.Section>
+              {isLoading ? (
+                <Card sectioned>
+                  <Loading />
+                </Card>
+              ) : (
               <ProductList
                 products={filteredProducts}
                 onSelectProduct={setSelectedProduct}
                 selectedProducts={selectedProducts}
                 onProductSelect={handleProductSelect}
               />
+              )}
             </Layout.Section>
 
             {(selectedProduct || selectedProducts.size > 0) && (
@@ -211,7 +265,14 @@ export default function DiscountsPage() {
                   productTitle={selectedProduct?.title || `${selectedProducts.size} products selected`}
                   isBulkUpdate={selectedProducts.size > 0}
                   selectedProductIds={Array.from(selectedProducts)}
+                  onRuleChange={setPreviewRule}
                   onSuccess={() => setSelectedProduct(null)}
+                />
+
+                <PricePreview
+                  products={selectedProduct ? [selectedProduct] : 
+                    filteredProducts.filter(p => selectedProducts.has(p.id))}
+                  rule={previewRule}
                 />
 
                 {selectedProduct && (
