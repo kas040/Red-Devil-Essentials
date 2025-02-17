@@ -1,5 +1,5 @@
 {
-  "name": "app",
+  "name": "Red Devil Essentials",
   "private": true,
   "scripts": {
     "build": "remix vite:build",
@@ -38,6 +38,7 @@
     "prisma": "^6.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "zod": "^3.22.4",
     "vite-tsconfig-paths": "^5.0.1"
   },
   "devDependencies": {

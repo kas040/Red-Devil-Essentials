@@ -4,6 +4,7 @@ import { boundary } from "@shopify/shopify-app-remix/server";
 import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
+import { Outlet, useRouteError, Link } from "@remix-run/react";
 
 import { authenticate } from "../shopify.server";
 
@@ -24,6 +25,7 @@ export default function App() {
         <Link to="/app" rel="home">
           Home
         </Link>
+        <Link to="/app/discounts">Discount Manager</Link>
         <Link to="/app/additional">Additional page</Link>
       </NavMenu>
       <Outlet />
