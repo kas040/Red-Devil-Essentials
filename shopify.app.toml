@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "97311f9ca9f17b392285ec80cb148a74"
-application_url = "https://rde-shopify-app.kas040.nl"
+application_url = "https://district-errors-wilderness-secondary.trycloudflare.com"
 embedded = true
 name = "Red Devil Essentials - Dev-V1"
 handle = "red-devil-essentials-1"
@@ -18,10 +18,15 @@ api_version = "2025-01"
   uri = "/webhooks/app/scopes_update"
 
 [auth]
-redirect_urls = [ "https://rde-shopify-app.kas040.nl/api/auth" ]
+redirect_urls = [
+  "https://district-errors-wilderness-secondary.trycloudflare.com/auth/callback",
+  "https://district-errors-wilderness-secondary.trycloudflare.com/auth/shopify/callback",
+  "https://district-errors-wilderness-secondary.trycloudflare.com/api/auth/callback"
+]
 
 [pos]
 embedded = false
 
 [build]
 include_config_on_deploy = true
+automatically_update_urls_on_dev = true
