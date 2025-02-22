@@ -12,10 +12,10 @@ export default defineConfig({
     },
   },
   server: {
-    port: Number(process.env.PORT || 8081),
+    port: Number(process.env.PORT || 3000),
     strictPort: false,
     hmr: {
-      port: 8081,
+      port: 3000,
       protocol: 'ws',
       host: 'localhost',
     },
