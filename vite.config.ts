@@ -3,36 +3,7 @@ import { installGlobals } from "@remix-run/node";
 import { defineConfig, type UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import path from "path";
-
 installGlobals({ nativeFetch: true });
-
-// Workaround voor SHOPIFY_APP_URL
-if (
-  process.env.HOST &&
-  (!process.env.SHOPIFY_APP_URL || process.env.SHOPIFY_APP_URL === process.env.HOST)
-) {
-  process.env.SHOPIFY_APP_URL = process.env.HOST;
-  delete process.env.HOST;
-}
-
-const host = new URL(process.env.SHOPIFY_APP_URL || "http://localhost").hostname;
-
-let hmrConfig;
-if (host === "localhost") {
-  hmrConfig = {
-    protocol: "ws",
-    host: "localhost",
-    port: 64999,
-    clientPort: 64999,
-  };
-} else {
-  hmrConfig = {
-    protocol: "wss",
-    host: host,
-    port: parseInt(process.env.FRONTEND_PORT!) || 8002,
-    clientPort: 443,
-  };
-}
 
 export default defineConfig({
   resolve: {
@@ -41,8 +12,13 @@ export default defineConfig({
     },
   },
   server: {
-    port: Number(process.env.PORT || 3000),
-    hmr: hmrConfig,
+    port: Number(process.env.PORT || 8081),
+    strictPort: false,
+    hmr: {
+      port: 8081,
+      protocol: 'ws',
+      host: 'localhost',
+    },
     fs: {
       allow: ["app", "node_modules"],
     },
@@ -55,7 +31,7 @@ export default defineConfig({
         v3_relativeSplatPath: true,
         v3_throwAbortReason: true,
         v3_lazyRouteDiscovery: true,
-        v3_singleFetch: false,
+        v3_singleFetch: true,
         v3_routeConfig: true,
       },
     }),
@@ -63,5 +39,11 @@ export default defineConfig({
   ],
   build: {
     assetsInlineLimit: 0,
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
+        warn(warning);
+      }
+    }
   },
 }) satisfies UserConfig;
