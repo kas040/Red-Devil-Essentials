@@ -1,32 +1,42 @@
-# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+# This file stores configurations for your Shopify app.
 
-client_id = "97311f9ca9f17b392285ec80cb148a74"
-application_url = "https://district-errors-wilderness-secondary.trycloudflare.com"
-embedded = true
-name = "Red Devil Essentials - Dev-V1"
-handle = "red-devil-essentials-1"
+scopes = "write_products"
 
 [webhooks]
-api_version = "2025-01"
+api_version = "2024-10"
 
+  # Handled by: /app/routes/webhooks.app.uninstalled.tsx
   [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
   uri = "/webhooks/app/uninstalled"
+  topics = ["app/uninstalled"]
 
+  # Handled by: /app/routes/webhooks.app.scopes_update.tsx
   [[webhooks.subscriptions]]
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
-[auth]
-redirect_urls = [
-  "https://district-errors-wilderness-secondary.trycloudflare.com/auth/callback",
-  "https://district-errors-wilderness-secondary.trycloudflare.com/auth/shopify/callback",
-  "https://district-errors-wilderness-secondary.trycloudflare.com/api/auth/callback"
-]
+  [[webhooks.subscriptions]]
+  topics = [ "cron/15_min" ]
+  uri = "/webhooks/scheduler"
 
-[pos]
-embedded = false
+  # Webhooks can have filters
+  # Only receive webhooks for product updates with a product price >= 10.00
+  # See: https://shopify.dev/docs/apps/build/webhooks/customize/filters
+  # [[webhooks.subscriptions]]
+  # topics = ["products/update"]
+  # uri = "/webhooks/products/update"
+  # filter = "variants.price:>=10.00"
 
-[build]
-include_config_on_deploy = true
-automatically_update_urls_on_dev = true
+  # Mandatory compliance topic for public apps only
+  # See: https://shopify.dev/docs/apps/build/privacy-law-compliance
+  # [[webhooks.subscriptions]]
+  # uri = "/webhooks/customers/data_request"
+  # compliance_topics = ["customers/data_request"]
+
+  # [[webhooks.subscriptions]]
+  # uri = "/webhooks/customers/redact"
+  # compliance_topics = ["customers/redact"]
+
+  # [[webhooks.subscriptions]]
+  # uri = "/webhooks/shop/redact"
+  # compliance_topics = ["shop/redact"]
