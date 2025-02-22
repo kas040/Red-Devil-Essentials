@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "97311f9ca9f17b392285ec80cb148a74"
-application_url = "https://example.com/"
+application_url = "https://rde-shopify-app.kas040.nl"
 embedded = true
 name = "Red Devil Essentials - Dev-V1"
 handle = "red-devil-essentials-1"
@@ -17,12 +17,8 @@ api_version = "2025-01"
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
-  [[webhooks.subscriptions]]
-  topics = [ "cron/15_min" ]
-  uri = "/webhooks/scheduler"
-
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://rde-shopify-app.kas040.nl/api/auth" ]
 
 [pos]
 embedded = false
